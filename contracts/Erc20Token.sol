@@ -4,29 +4,41 @@ pragma solidity ^0.8.0;
 contract Erc20TokenContract{
 
     address public owner;
-    string public name = "JohnPork";
-    string public symbol = "JP";
-    uint totalSupply = 0;
+    string public name ;
+    string public symbol;
+    uint Supply = 0;
     mapping (address => uint) balances;
-    mapping(address => mapping(address => uint)) allowance;
+    mapping(address => mapping(address => uint)) allowances;
     event Approval(address indexed _owner , address indexed _spender , uint _value);
     event Transfer(address indexed _from , address indexed _to , uint _value);
+    uint decimals = 6;
 
-    constructor(){
+    constructor(string memory _name , string memory _symbol){
         owner = msg.sender;
+        name = _name;
+        symbol = _symbol;
+
     }
 
     function approve(address _spender , uint _value) public returns (bool success){
-        allowance[msg.sender][_spender] = _value;
+        allowances[msg.sender][_spender] = _value;
         emit Approval(msg.sender,_spender, _value);
         return success;
     }
 
+    function allowance(address _owner , address _spender) public view returns (uint){
+        return allowances[_owner][_spender];
+    }
+
+    function totalSupply() public view returns (uint){
+        return Supply;
+    }
+
     function transferFrom(address _from , address _to , uint _value) public returns (bool success){
-        uint userAllowance = allowance[_from][msg.sender];
+        uint userAllowance = allowances[_from][msg.sender];
         require(userAllowance >= _value ,"u aint allowed this much");
         require(balances[_from] >= _value , "that guy is broke af");
-        allowance[_from][msg.sender]-=_value;
+        allowances[_from][msg.sender]-=_value;
         balances[_from]-= _value;
         balances[_to]+= _value;
         emit Transfer(_from, _to, _value);
@@ -37,7 +49,7 @@ contract Erc20TokenContract{
     function mintto(uint amount , address to) private  {
         require(msg.sender == owner);
         balances[to] += amount;
-        totalSupply+=amount;
+        Supply+=amount;
 
     }
 
@@ -50,6 +62,6 @@ contract Erc20TokenContract{
     function burn(uint amount) public{
         require(balances[msg.sender] >= amount , "not enough balance");
         balances[msg.sender]-=amount;
-        totalSupply-=amount;
+        Supply-=amount;
     }
 }
