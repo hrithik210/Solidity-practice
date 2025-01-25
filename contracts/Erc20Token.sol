@@ -11,7 +11,7 @@ contract Erc20TokenContract{
     mapping(address => mapping(address => uint)) allowances;
     event Approval(address indexed _owner , address indexed _spender , uint _value);
     event Transfer(address indexed _from , address indexed _to , uint _value);
-    uint decimals = 6;
+    uint public decimals = 6;
 
     constructor(string memory _name , string memory _symbol){
         owner = msg.sender;
@@ -22,8 +22,12 @@ contract Erc20TokenContract{
 
     function approve(address _spender , uint _value) public returns (bool success){
         allowances[msg.sender][_spender] = _value;
-        emit Approval(msg.sender,_spender, _value);
+        emit Approval(msg.sender , _spender, _value);
         return success;
+    }
+
+    function balanceof(address account) public view returns (uint){
+        return balances[account];
     }
 
     function allowance(address _owner , address _spender) public view returns (uint){
@@ -53,15 +57,18 @@ contract Erc20TokenContract{
 
     }
 
-    function transfer(uint amount , address to) public {
+    function transfer(uint amount , address to) public returns(bool success) {
         require(balances[msg.sender] >= amount, "u dont have enough balance");
         balances[msg.sender]-=amount;
         balances[to]+=amount;
+        emit Transfer(msg.sender, to, amount);
+        return success;
     }
 
     function burn(uint amount) public{
         require(balances[msg.sender] >= amount , "not enough balance");
         balances[msg.sender]-=amount;
         Supply-=amount;
+        emit Transfer(msg.sender, address(0), amount);
     }
 }
